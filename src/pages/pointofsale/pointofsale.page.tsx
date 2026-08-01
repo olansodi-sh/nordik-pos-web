@@ -1,11 +1,11 @@
-import { BarChart3 } from "lucide-react";
+import { ShoppingCart } from "lucide-react";
 import { PageHeader } from "@/components/page-header/page-header.component";
 import { Card } from "@/components/cards/card.component";
 
-const ReportsPage = () => {
+const PointOfSalePage = () => {
   return (
     <div>
-      <PageHeader title="Reportes" description="Reportes financieros" icon={BarChart3} />
+      <PageHeader title="Punto de venta" description="Registro de ventas en caja" icon={ShoppingCart} />
       <Card>
         <p className="text-sm text-secondary">Módulo en construcción.</p>
       </Card>
@@ -13,4 +13,4 @@ const ReportsPage = () => {
   );
 };
 
-export default ReportsPage;
+export default PointOfSalePage;
