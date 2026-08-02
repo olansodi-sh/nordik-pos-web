@@ -1,38 +1,50 @@
-import { createContext, useContext, useState, type ReactNode } from "react";
-
-interface AuthUser {
-  name: string;
-  email: string;
-}
+import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
+import { LoginApi, type AuthenticatedUser } from "@/pages/login/api/login.api";
+import { ApiError, getStoredToken, setStoredToken } from "@/services/http/httpClient";
 
 interface AuthContextValue {
-  user: AuthUser | null;
+  user: AuthenticatedUser | null;
   isAuthenticated: boolean;
   loading: boolean;
+  bootstrapping: boolean;
   error: string;
   login: (email: string, password: string) => Promise<void>;
   logout: () => void;
+  hasPermission: (permission: string) => boolean;
 }
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<AuthUser | null>(null);
+  const [user, setUser] = useState<AuthenticatedUser | null>(null);
   const [loading, setLoading] = useState(false);
+  const [bootstrapping, setBootstrapping] = useState(true);
   const [error, setError] = useState("");
+
+  useEffect(() => {
+    const token = getStoredToken();
+    if (!token) {
+      setBootstrapping(false);
+      return;
+    }
+
+    LoginApi.me()
+      .then(setUser)
+      .catch(() => setStoredToken(null))
+      .finally(() => setBootstrapping(false));
+  }, []);
 
   async function login(email: string, password: string) {
     setError("");
     setLoading(true);
     try {
-      // TODO: reemplazar por llamada real a la API de autenticación.
-      await new Promise((resolve) => setTimeout(resolve, 400));
-      if (!email || !password) {
-        throw new Error("Credenciales inválidas");
-      }
-      setUser({ name: email.split("@")[0], email });
+      const { accessToken } = await LoginApi.login({ email, password });
+      setStoredToken(accessToken);
+      const me = await LoginApi.me();
+      setUser(me);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Credenciales inválidas");
+      setStoredToken(null);
+      setError(err instanceof ApiError ? err.message : "Credenciales inválidas");
       throw err;
     } finally {
       setLoading(false);
@@ -40,12 +52,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   function logout() {
+    setStoredToken(null);
     setUser(null);
+  }
+
+  function hasPermission(permission: string) {
+    return user?.permissions.includes(permission) ?? false;
   }
 
   return (
     <AuthContext.Provider
-      value={{ user, isAuthenticated: user !== null, loading, error, login, logout }}
+      value={{
+        user,
+        isAuthenticated: user !== null,
+        loading,
+        bootstrapping,
+        error,
+        login,
+        logout,
+        hasPermission,
+      }}
     >
       {children}
     </AuthContext.Provider>

@@ -15,6 +15,8 @@ import {
   Wallet,
   BarChart3,
   BookOpen,
+  RefreshCw,
+  Kanban,
 } from "lucide-react";
 
 export interface NavLeaf {
@@ -65,6 +67,9 @@ export const DRAWER_NAV: NavEntry[] = [
       { key: "sales", label: "Ventas", to: "/sales", icon: Receipt },
       { key: "purchases", label: "Compras", to: "/purchases", icon: ShoppingBag },
       { key: "creditnotes", label: "Notas crédito", to: "/creditnotes", icon: FileMinus },
+      { key: "vouchers", label: "Vales", to: "/vouchers", icon: Wallet },
+      { key: "recurring-invoices", label: "Facturas recurrentes", to: "/recurring-invoices", icon: RefreshCw },
+      { key: "kanban", label: "Tablero", to: "/kanban", icon: Kanban },
     ],
   },
   {
