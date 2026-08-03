@@ -12,23 +12,40 @@ import { useAuth } from "@/stores/auth.store";
 import { ApiError } from "@/services/http/httpClient";
 import { UsersApi, type AppUser } from "@/pages/users/api/users.api";
 import { useAppUsers, useRoles } from "@/pages/users/hooks/users.hook";
+import { useBusinesses } from "@/pages/business/hooks/business.hook";
 
 const emptyForm = {
   name: "",
   email: "",
   password: "",
   roleId: "",
+  businessId: "",
 };
 
 export function UsersTab() {
-  const { users, loading, refetch } = useAppUsers();
-  const { roles } = useRoles();
   const { user: currentUser } = useAuth();
+  const isSuperAdmin = currentUser?.isSuperAdmin ?? false;
+
+  const { businesses } = useBusinesses();
+  const [targetBusinessId, setTargetBusinessId] = useState("");
+  const effectiveBusinessId = isSuperAdmin ? targetBusinessId || undefined : undefined;
+
+  const { users, loading, refetch } = useAppUsers(effectiveBusinessId);
   const { notifyError, notifySuccess } = useToast();
 
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState(emptyForm);
   const [saving, setSaving] = useState(false);
+
+  // Roles del formulario: dependen de la empresa elegida DENTRO del modal
+  // (que puede ser distinta de la empresa por la que se está filtrando la lista).
+  const formBusinessId = isSuperAdmin ? form.businessId || undefined : undefined;
+  const { roles: formRoles } = useRoles(formBusinessId);
+
+  function openCreateModal() {
+    setForm({ ...emptyForm, businessId: targetBusinessId });
+    setOpen(true);
+  }
 
   async function onCreate() {
     setSaving(true);
@@ -38,6 +55,7 @@ export function UsersTab() {
         email: form.email,
         password: form.password,
         roleId: form.roleId || undefined,
+        businessId: formBusinessId,
       });
       notifySuccess("Usuario creado");
       setOpen(false);
@@ -104,8 +122,20 @@ export function UsersTab() {
 
   return (
     <div>
+      {isSuperAdmin && (
+        <div className="mb-4 max-w-sm">
+          <Field label="Empresa (superadministrador)">
+            <Select
+              value={targetBusinessId}
+              onChange={(e) => setTargetBusinessId(e.target.value)}
+              placeholder="Mi empresa"
+              options={businesses.map((b) => ({ value: b.id, label: b.name }))}
+            />
+          </Field>
+        </div>
+      )}
       <div className="mb-4 flex justify-end">
-        <Button onClick={() => setOpen(true)}>
+        <Button onClick={openCreateModal}>
           <Plus size={15} />
           Nuevo usuario
         </Button>
@@ -137,6 +167,16 @@ export function UsersTab() {
         }
       >
         <div className="flex flex-col gap-4">
+          {isSuperAdmin && (
+            <Field label="Empresa a la que pertenecerá">
+              <Select
+                value={form.businessId}
+                onChange={(e) => setForm({ ...form, businessId: e.target.value, roleId: "" })}
+                placeholder="Mi empresa"
+                options={businesses.map((b) => ({ value: b.id, label: b.name }))}
+              />
+            </Field>
+          )}
           <Field label="Nombre">
             <Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
           </Field>
@@ -155,7 +195,7 @@ export function UsersTab() {
               value={form.roleId}
               onChange={(e) => setForm({ ...form, roleId: e.target.value })}
               placeholder="Sin rol"
-              options={roles.map((r) => ({ value: r.id, label: r.name }))}
+              options={formRoles.map((r) => ({ value: r.id, label: r.name }))}
             />
           </Field>
         </div>

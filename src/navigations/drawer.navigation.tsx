@@ -19,6 +19,7 @@ import {
   Kanban,
   Banknote,
   ClipboardList,
+  Building2,
 } from "lucide-react";
 
 export interface NavLeaf {
@@ -26,6 +27,7 @@ export interface NavLeaf {
   label: string;
   to: string;
   icon: LucideIcon;
+  superAdminOnly?: boolean;
 }
 
 export interface NavGroup {
@@ -55,6 +57,8 @@ export const DRAWER_NAV: NavEntry[] = [
     label: "Administración",
     icon: UserCog,
     children: [
+      { key: "companies", label: "Empresas", to: "/companies", icon: Building2, superAdminOnly: true },
+      { key: "business", label: "Datos del negocio", to: "/business", icon: Building2 },
       { key: "users", label: "Usuarios", to: "/users", icon: Users },
       { key: "thirdparty", label: "Gestión Terceros", to: "/thirdparty", icon: Contact },
     ],

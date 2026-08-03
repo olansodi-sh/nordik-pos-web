@@ -11,6 +11,7 @@ export interface AuthenticatedUser {
   email: string;
   name: string;
   permissions: string[];
+  isSuperAdmin: boolean;
 }
 
 export interface LoginResponse {

@@ -12,7 +12,7 @@ function errorMessage(err: unknown): string {
   return err instanceof ApiError ? err.message : "Ocurrió un error inesperado";
 }
 
-export function useAppUsers() {
+export function useAppUsers(businessId?: string) {
   const [users, setUsers] = useState<AppUser[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -21,13 +21,13 @@ export function useAppUsers() {
     setLoading(true);
     setError("");
     try {
-      setUsers(await UsersApi.list());
+      setUsers(await UsersApi.list(businessId));
     } catch (err) {
       setError(errorMessage(err));
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [businessId]);
 
   useEffect(() => {
     void refetch();
@@ -36,7 +36,7 @@ export function useAppUsers() {
   return { users, loading, error, refetch };
 }
 
-export function useRoles() {
+export function useRoles(businessId?: string) {
   const [roles, setRoles] = useState<Role[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -45,13 +45,13 @@ export function useRoles() {
     setLoading(true);
     setError("");
     try {
-      setRoles(await RolesApi.list());
+      setRoles(await RolesApi.list(businessId));
     } catch (err) {
       setError(errorMessage(err));
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [businessId]);
 
   useEffect(() => {
     void refetch();

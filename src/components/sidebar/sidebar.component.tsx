@@ -2,6 +2,7 @@ import { useState } from "react";
 import { NavLink, useLocation } from "react-router-dom";
 import { ChevronDown } from "lucide-react";
 import { DRAWER_NAV, isNavGroup, type NavGroup, type NavLeaf } from "@/navigations/drawer.navigation";
+import { useAuth } from "@/stores/auth.store";
 
 function leafClasses(isActive: boolean) {
   return `flex items-center gap-2.5 rounded-md px-3 py-2 text-sm font-medium transition-colors ${
@@ -52,6 +53,13 @@ function NavGroupItem({ group, defaultOpen }: { group: NavGroup; defaultOpen: bo
 
 export function Sidebar() {
   const location = useLocation();
+  const { user } = useAuth();
+  const isSuperAdmin = user?.isSuperAdmin ?? false;
+
+  const visibleNav = DRAWER_NAV.map((entry) => {
+    if (!isNavGroup(entry)) return entry;
+    return { ...entry, children: entry.children.filter((c) => !c.superAdminOnly || isSuperAdmin) };
+  }).filter((entry) => (isNavGroup(entry) ? entry.children.length > 0 : true));
 
   return (
     <aside className="flex h-full w-64 flex-col border-r border-outline bg-surface-lowest">
@@ -65,7 +73,7 @@ export function Sidebar() {
         </div>
       </div>
       <nav className="flex-1 space-y-1 overflow-y-auto px-3 py-3">
-        {DRAWER_NAV.map((entry) => {
+        {visibleNav.map((entry) => {
           if (isNavGroup(entry)) {
             const isActiveGroup = entry.children.some((c) => location.pathname.startsWith(c.to));
             return <NavGroupItem key={entry.key} group={entry} defaultOpen={isActiveGroup} />;

@@ -35,6 +35,7 @@ export interface CreateUserPayload {
   email: string;
   password: string;
   roleId?: string;
+  businessId?: string;
 }
 
 export interface UpdateUserPayload {
@@ -45,8 +46,8 @@ export interface UpdateUserPayload {
 }
 
 export class UsersApi {
-  static async list(): Promise<AppUser[]> {
-    const { data } = await httpClient.get<AppUser[]>("/users");
+  static async list(businessId?: string): Promise<AppUser[]> {
+    const { data } = await httpClient.get<AppUser[]>("/users", { params: { businessId } });
     return data;
   }
 
@@ -66,8 +67,8 @@ export class UsersApi {
 }
 
 export class RolesApi {
-  static async list(): Promise<Role[]> {
-    const { data } = await httpClient.get<Role[]>("/roles");
+  static async list(businessId?: string): Promise<Role[]> {
+    const { data } = await httpClient.get<Role[]>("/roles", { params: { businessId } });
     return data;
   }
 

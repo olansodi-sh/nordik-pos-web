@@ -3,6 +3,8 @@ import type { ReactNode } from "react";
 import { useAuth } from "@/stores/auth.store";
 import { Layout } from "@/components/layout/layout.component";
 import LoginPage from "@/pages/login/login.page";
+import BusinessPage from "@/pages/business/business.page";
+import CompaniesPage from "@/pages/companies/companies.page";
 import DasboardPage from "@/pages/dasboard/dasboard.page";
 import UsersPage from "@/pages/users/users.page";
 import ThirdpartyPage from "@/pages/thirdparty/thirdparty.page";
@@ -42,6 +44,8 @@ export const router = createBrowserRouter([
       { index: true, element: <Navigate to="/dashboard" replace /> },
       { path: "dashboard", element: <DasboardPage /> },
       { path: "users", element: <UsersPage /> },
+      { path: "business", element: <BusinessPage /> },
+      { path: "companies", element: <CompaniesPage /> },
       { path: "thirdparty", element: <ThirdpartyPage /> },
       { path: "pos", element: <PointOfSalePage /> },
       { path: "quotes", element: <QuotesPage /> },
