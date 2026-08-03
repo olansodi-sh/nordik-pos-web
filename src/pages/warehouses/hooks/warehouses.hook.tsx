@@ -1,6 +1,13 @@
 import { useCallback, useEffect, useState } from "react";
 import { ApiError } from "@/services/http/httpClient";
-import { StockApi, WarehousesApi, type Stock, type Warehouse } from "@/pages/warehouses/api/warehouses.api";
+import {
+  StockApi,
+  WarehousesApi,
+  type Stock,
+  type StockMovement,
+  type StockMovementFilters,
+  type Warehouse,
+} from "@/pages/warehouses/api/warehouses.api";
 
 function errorMessage(err: unknown): string {
   return err instanceof ApiError ? err.message : "Ocurrió un error inesperado";
@@ -52,4 +59,37 @@ export function useStock(warehouseId: string | null) {
   }, [refetch]);
 
   return { stock, loading, refetch };
+}
+
+export function useStockMovements(filters: StockMovementFilters, enabled: boolean) {
+  const [movements, setMovements] = useState<StockMovement[]>([]);
+  const [loading, setLoading] = useState(false);
+
+  const refetch = useCallback(async () => {
+    if (!enabled) {
+      setMovements([]);
+      return;
+    }
+    setLoading(true);
+    try {
+      setMovements(await StockApi.movements(filters));
+    } finally {
+      setLoading(false);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [
+    enabled,
+    filters.warehouseId,
+    filters.productId,
+    filters.variantId,
+    filters.type,
+    filters.from,
+    filters.to,
+  ]);
+
+  useEffect(() => {
+    void refetch();
+  }, [refetch]);
+
+  return { movements, loading, refetch };
 }

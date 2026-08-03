@@ -17,6 +17,8 @@ import {
   BookOpen,
   RefreshCw,
   Kanban,
+  Banknote,
+  ClipboardList,
 } from "lucide-react";
 
 export interface NavLeaf {
@@ -70,6 +72,7 @@ export const DRAWER_NAV: NavEntry[] = [
       { key: "vouchers", label: "Vales", to: "/vouchers", icon: Wallet },
       { key: "recurring-invoices", label: "Facturas recurrentes", to: "/recurring-invoices", icon: RefreshCw },
       { key: "kanban", label: "Tablero", to: "/kanban", icon: Kanban },
+      { key: "opentabs", label: "Cuentas abiertas", to: "/opentabs", icon: ClipboardList },
     ],
   },
   {
@@ -89,6 +92,7 @@ export const DRAWER_NAV: NavEntry[] = [
     children: [
       { key: "reports", label: "Reportes", to: "/reports", icon: BarChart3 },
       { key: "journal", label: "Libro diario", to: "/journal", icon: BookOpen },
+      { key: "expenses", label: "Gastos", to: "/expenses", icon: Banknote },
     ],
   },
 ];

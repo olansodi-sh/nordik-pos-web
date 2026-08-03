@@ -48,6 +48,7 @@ export function PosCart({ session }: PosCartProps) {
   const [warehouseId, setWarehouseId] = useState(session.warehouseId ?? "");
   const [customerId, setCustomerId] = useState("");
   const [priceListId, setPriceListId] = useState("");
+  const [label, setLabel] = useState("");
   const { items: priceItems } = usePriceListItems(priceListId || null);
 
   const [search, setSearch] = useState("");
@@ -131,6 +132,7 @@ export function PosCart({ session }: PosCartProps) {
         priceListId: priceListId || undefined,
         warehouseId,
         cashSessionId: session.id,
+        label: label || undefined,
         lines: lines.map((l) => ({ productId: l.productId, variantId: l.variantId, quantity: l.quantity })),
       });
       setCreatedSale(sale);
@@ -167,7 +169,16 @@ export function PosCart({ session }: PosCartProps) {
     setCreatedSale(null);
     setPaidSale(null);
     setCustomerId("");
+    setLabel("");
     setPayAmount("0");
+  }
+
+  function onLeaveAsOpenTab() {
+    if (!createdSale) return;
+    notifySuccess(
+      `Venta ${createdSale.number} quedó pendiente de cobro — la encuentras en "Cuentas abiertas".`,
+    );
+    onNewSale();
   }
 
   if (paidSale) {
@@ -210,7 +221,10 @@ export function PosCart({ session }: PosCartProps) {
             <Input type="number" value={payAmount} onChange={(e) => setPayAmount(e.target.value)} />
           </Field>
         </div>
-        <div className="mt-4 flex justify-end">
+        <div className="mt-4 flex justify-end gap-2">
+          <Button variant="secondary" onClick={onLeaveAsOpenTab}>
+            Dejar pendiente (cuenta abierta)
+          </Button>
           <Button onClick={() => void onPay()} loading={paying}>
             Registrar pago
           </Button>
@@ -223,7 +237,7 @@ export function PosCart({ session }: PosCartProps) {
     <div className="grid grid-cols-3 gap-6">
       <div className="col-span-2">
         <Card>
-          <div className="mb-4 grid grid-cols-3 gap-4">
+          <div className="mb-4 grid grid-cols-4 gap-4">
             <Field label="Bodega">
               <Select
                 value={warehouseId}
@@ -247,6 +261,9 @@ export function PosCart({ session }: PosCartProps) {
                 placeholder="Por defecto del negocio"
                 options={priceLists.map((l) => ({ value: l.id, label: l.name }))}
               />
+            </Field>
+            <Field label="Nombre de cuenta (opcional)">
+              <Input value={label} onChange={(e) => setLabel(e.target.value)} placeholder="Mesa 3, Fiado Juan..." />
             </Field>
           </div>
 

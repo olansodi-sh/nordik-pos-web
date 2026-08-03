@@ -19,6 +19,10 @@ export interface Sale {
   paidAmount: number;
   status: SaleStatus;
   date: string;
+  label: string | null;
+  voidReason: string | null;
+  voidedAt: string | null;
+  voidedBy: string | null;
 }
 
 export interface SaleLine {
@@ -47,6 +51,7 @@ export interface CreateSalePayload {
   priceListId?: string;
   warehouseId: string;
   cashSessionId?: string;
+  label?: string;
   lines: CreateSaleLinePayload[];
 }
 
@@ -86,6 +91,16 @@ export class SalesApi {
 
   static async create(payload: CreateSalePayload): Promise<Sale> {
     const { data } = await httpClient.post<Sale>("/sales", payload);
+    return data;
+  }
+
+  static async addLines(id: string, lines: CreateSaleLinePayload[]): Promise<Sale> {
+    const { data } = await httpClient.post<Sale>(`/sales/${id}/lines`, { lines });
+    return data;
+  }
+
+  static async void(id: string, reason: string): Promise<Sale> {
+    const { data } = await httpClient.post<Sale>(`/sales/${id}/void`, { reason });
     return data;
   }
 }

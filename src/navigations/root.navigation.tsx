@@ -19,6 +19,8 @@ import WarehousesPage from "@/pages/warehouses/warehouses.page";
 import PriceListPage from "@/pages/pricelist/pricelist.page";
 import ReportsPage from "@/pages/reports/reports.page";
 import JournalPage from "@/pages/journal/journal.page";
+import ExpensesPage from "@/pages/expenses/expenses.page";
+import OpenTabsPage from "@/pages/opentabs/opentabs.page";
 
 function ProtectedRoute({ children }: { children: ReactNode }) {
   const { isAuthenticated, bootstrapping } = useAuth();
@@ -54,6 +56,8 @@ export const router = createBrowserRouter([
       { path: "pricelist", element: <PriceListPage /> },
       { path: "reports", element: <ReportsPage /> },
       { path: "journal", element: <JournalPage /> },
+      { path: "expenses", element: <ExpensesPage /> },
+      { path: "opentabs", element: <OpenTabsPage /> },
     ],
   },
   { path: "*", element: <Navigate to="/" replace /> },

@@ -7,7 +7,7 @@ import { Select } from "@/components/form/select.component";
 import { Button } from "@/components/button/button.component";
 import { useToast } from "@/components/toast/toast.store";
 import { ApiError } from "@/services/http/httpClient";
-import { PaymentsApi, type PaymentMethod, type Sale } from "@/pages/sales/api/sales.api";
+import { PaymentsApi, SalesApi, type PaymentMethod, type Sale } from "@/pages/sales/api/sales.api";
 import { useSaleLines } from "@/pages/sales/hooks/sales.hook";
 
 const PAYMENT_METHOD_LABELS: Record<PaymentMethod, string> = {
@@ -41,6 +41,10 @@ export function SaleDetailModal({ sale, onClose, onPaid }: SaleDetailModalProps)
   const [amount, setAmount] = useState(String(pending > 0 ? pending : 0));
   const [paying, setPaying] = useState(false);
 
+  const [voidReason, setVoidReason] = useState("");
+  const [voiding, setVoiding] = useState(false);
+  const canVoid = sale.status !== "cancelled" && Number(sale.paidAmount) === 0;
+
   async function onPay() {
     setPaying(true);
     try {
@@ -59,8 +63,22 @@ export function SaleDetailModal({ sale, onClose, onPaid }: SaleDetailModalProps)
     }
   }
 
+  async function onVoid() {
+    if (!voidReason.trim()) return;
+    setVoiding(true);
+    try {
+      await SalesApi.void(sale.id, voidReason.trim());
+      notifySuccess("Venta anulada — el inventario fue reingresado");
+      onPaid();
+    } catch (err) {
+      notifyError(err instanceof ApiError ? err.message : "No se pudo anular la venta");
+    } finally {
+      setVoiding(false);
+    }
+  }
+
   return (
-    <Modal open title={`Venta ${sale.number}`} onClose={onClose}>
+    <Modal open title={`Venta ${sale.number}${sale.label ? ` — ${sale.label}` : ""}`} onClose={onClose}>
       <div className="mb-4 grid grid-cols-2 gap-2 text-sm">
         <span className="text-secondary">Estado</span>
         <span className="text-right text-on-surface">{STATUS_LABELS[sale.status] ?? sale.status}</span>
@@ -72,6 +90,12 @@ export function SaleDetailModal({ sale, onClose, onPaid }: SaleDetailModalProps)
         <span className="text-right font-semibold text-on-surface">{sale.total}</span>
         <span className="text-secondary">Pagado</span>
         <span className="text-right text-on-surface">{sale.paidAmount}</span>
+        {sale.status === "cancelled" && (
+          <>
+            <span className="text-secondary">Motivo de anulación</span>
+            <span className="text-right text-danger">{sale.voidReason}</span>
+          </>
+        )}
       </div>
 
       <Table
@@ -106,6 +130,24 @@ export function SaleDetailModal({ sale, onClose, onPaid }: SaleDetailModalProps)
           <div className="mt-4 flex justify-end">
             <Button onClick={() => void onPay()} loading={paying}>
               Registrar pago
+            </Button>
+          </div>
+        </div>
+      )}
+
+      {canVoid && (
+        <div className="mt-6 rounded-xl border border-danger/40 p-4">
+          <h4 className="mb-3 text-sm font-semibold text-danger">Anular venta</h4>
+          <p className="mb-3 text-xs text-secondary">
+            Revierte el inventario descontado y marca la venta como cancelada. Solo disponible mientras no
+            tenga pagos registrados.
+          </p>
+          <Field label="Motivo (obligatorio)">
+            <Input value={voidReason} onChange={(e) => setVoidReason(e.target.value)} placeholder="Cliente canceló, error de registro..." />
+          </Field>
+          <div className="mt-4 flex justify-end">
+            <Button variant="danger" onClick={() => void onVoid()} loading={voiding} disabled={!voidReason.trim()}>
+              Anular venta
             </Button>
           </div>
         </div>
