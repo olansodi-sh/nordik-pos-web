@@ -10,6 +10,7 @@ import { useToast } from "@/components/toast/toast.store";
 import { ApiError } from "@/services/http/httpClient";
 import { RolesApi, type Role } from "@/pages/users/api/users.api";
 import { usePermissions, useRoles } from "@/pages/users/hooks/users.hook";
+import { groupPermissions, permissionLabel } from "@/pages/users/utils/permission-labels";
 
 export function RolesTab() {
   const { roles, loading, refetch } = useRoles();
@@ -43,6 +44,16 @@ export function RolesTab() {
       return next;
     });
   }
+
+  function toggleGroup(codes: string[], allSelected: boolean) {
+    setSelectedCodes((prev) => {
+      const next = new Set(prev);
+      codes.forEach((code) => (allSelected ? next.delete(code) : next.add(code)));
+      return next;
+    });
+  }
+
+  const permissionGroups = groupPermissions(permissions);
 
   async function onSave() {
     setSaving(true);
@@ -86,7 +97,18 @@ export function RolesTab() {
   const columns: TableColumn<Role>[] = [
     { key: "name", header: "Nombre", render: (r) => r.name },
     { key: "description", header: "Descripción", render: (r) => r.description ?? "—" },
-    { key: "permissions", header: "Permisos", render: (r) => r.permissions.length },
+    {
+      key: "permissions",
+      header: "Permisos",
+      render: (r) =>
+        r.permissions.length === 0 ? (
+          <span className="text-on-surface-variant">Sin permisos</span>
+        ) : (
+          <span title={r.permissions.map((p) => permissionLabel(p.code)).join(", ")}>
+            {r.permissions.length} de {permissions.length}
+          </span>
+        ),
+    },
     {
       key: "actions",
       header: "",
@@ -161,17 +183,35 @@ export function RolesTab() {
             <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-on-surface-variant">
               Permisos
             </p>
-            <div className="grid max-h-64 grid-cols-2 gap-x-4 gap-y-2 overflow-y-auto rounded-md border border-outline p-3">
-              {permissions.map((p) => (
-                <label key={p.id} className="flex items-center gap-2 text-sm text-on-surface-variant">
-                  <input
-                    type="checkbox"
-                    checked={selectedCodes.has(p.code)}
-                    onChange={() => togglePermission(p.code)}
-                  />
-                  {p.code}
-                </label>
-              ))}
+            <div className="flex max-h-80 flex-col gap-3 overflow-y-auto rounded-md border border-outline p-3">
+              {permissionGroups.map((group) => {
+                const groupCodes = group.items.map((p) => p.code);
+                const allSelected = groupCodes.every((code) => selectedCodes.has(code));
+                return (
+                  <div key={group.label}>
+                    <label className="mb-1 flex items-center gap-2 text-xs font-semibold text-on-surface">
+                      <input
+                        type="checkbox"
+                        checked={allSelected}
+                        onChange={() => toggleGroup(groupCodes, allSelected)}
+                      />
+                      {group.label}
+                    </label>
+                    <div className="ml-5 grid grid-cols-2 gap-x-4 gap-y-1">
+                      {group.items.map((p) => (
+                        <label key={p.id} className="flex items-center gap-2 text-sm text-on-surface-variant">
+                          <input
+                            type="checkbox"
+                            checked={selectedCodes.has(p.code)}
+                            onChange={() => togglePermission(p.code)}
+                          />
+                          {permissionLabel(p.code)}
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           </div>
         </div>

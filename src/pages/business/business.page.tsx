@@ -9,10 +9,13 @@ import { useToast } from "@/components/toast/toast.store";
 import { ApiError } from "@/services/http/httpClient";
 import { BusinessApi } from "@/pages/business/api/business.api";
 import { useBusiness } from "@/pages/business/hooks/business.hook";
+import { useAuth } from "@/stores/auth.store";
 
 const BusinessPage = () => {
   const { business, loading, refetch } = useBusiness();
   const { notifyError, notifySuccess } = useToast();
+  const { user: currentUser } = useAuth();
+  const isSuperAdmin = currentUser?.isSuperAdmin ?? false;
 
   const [name, setName] = useState("");
   const [taxId, setTaxId] = useState("");
@@ -50,13 +53,22 @@ const BusinessPage = () => {
       <Card>
         {loading ? (
           <p className="text-sm text-secondary">Cargando…</p>
-        ) : (
+        ) : isSuperAdmin ? (
           <div className="flex max-w-lg flex-col gap-4">
             <Field label="Nombre del negocio" htmlFor="name">
-              <Input id="name" value={name} onChange={(e) => setName(e.target.value)} />
+              <Input
+                id="name"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+              />
             </Field>
             <Field label="NIT / Identificación tributaria" htmlFor="taxId">
-              <Input id="taxId" value={taxId} onChange={(e) => setTaxId(e.target.value)} placeholder="Opcional" />
+              <Input
+                id="taxId"
+                value={taxId}
+                onChange={(e) => setTaxId(e.target.value)}
+                placeholder="Opcional"
+              />
             </Field>
             <label className="flex items-center gap-2 text-sm text-on-surface">
               <input
@@ -71,6 +83,29 @@ const BusinessPage = () => {
               <Button onClick={() => void onSave()} loading={saving} disabled={!name.trim()}>
                 Guardar cambios
               </Button>
+            </div>
+          </div>
+        ) : (
+          <div className="flex max-w-lg flex-col gap-6">
+            <div className="flex flex-col gap-1">
+              <span className="text-xs font-medium text-secondary uppercase tracking-wide">
+                Nombre del negocio
+              </span>
+              <span className="text-base text-on-surface">{business?.name ?? "—"}</span>
+            </div>
+            <div className="flex flex-col gap-1">
+              <span className="text-xs font-medium text-secondary uppercase tracking-wide">
+                NIT / Identificación tributaria
+              </span>
+              <span className="text-base text-on-surface">{business?.taxId ?? "—"}</span>
+            </div>
+            <div className="flex flex-col gap-1">
+              <span className="text-xs font-medium text-secondary uppercase tracking-wide">
+                Estado
+              </span>
+              <span className="text-base text-on-surface">
+                {business?.active ? "Activo" : "Inactivo"}
+              </span>
             </div>
           </div>
         )}

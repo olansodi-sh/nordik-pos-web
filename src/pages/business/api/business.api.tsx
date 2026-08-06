@@ -13,9 +13,16 @@ export interface UpdateBusinessPayload {
   active?: boolean;
 }
 
+export interface CreateBusinessAdminPayload {
+  name: string;
+  email: string;
+  password: string;
+}
+
 export interface CreateBusinessPayload {
   name: string;
   taxId?: string;
+  admins: CreateBusinessAdminPayload[];
 }
 
 export class BusinessApi {
@@ -43,5 +50,9 @@ export class BusinessApi {
   static async updateById(id: string, payload: UpdateBusinessPayload): Promise<Business> {
     const { data } = await httpClient.patch<Business>(`/businesses/${id}`, payload);
     return data;
+  }
+
+  static async remove(id: string): Promise<void> {
+    await httpClient.delete(`/businesses/${id}`);
   }
 }
