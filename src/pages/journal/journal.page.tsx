@@ -6,7 +6,7 @@ import { Table, type TableColumn } from "@/components/table/table.component";
 import { EmptyState } from "@/components/empty-state/empty-state.component";
 import { useCashSessionsHistory } from "@/pages/journal/hooks/journal.hook";
 import { SessionMovementsModal } from "@/pages/journal/components/session-movements-modal.component";
-import { useWarehouses } from "@/pages/warehouses/hooks/warehouses.hook";
+import { useCashRegisters, useWarehouses } from "@/pages/warehouses/hooks/warehouses.hook";
 import { useAppUsers } from "@/pages/users/hooks/users.hook";
 import type { CashSession } from "@/pages/pointofsale/api/pointofsale.api";
 
@@ -18,12 +18,14 @@ const STATUS_LABELS: Record<string, string> = {
 const JournalPage = () => {
   const { sessions, loading } = useCashSessionsHistory();
   const { warehouses } = useWarehouses();
+  const { registers } = useCashRegisters();
   const { users } = useAppUsers();
   const [selected, setSelected] = useState<CashSession | null>(null);
 
   const columns: TableColumn<CashSession>[] = [
     { key: "user", header: "Usuario", render: (s) => users.find((u) => u.id === s.userId)?.name ?? "—" },
     { key: "warehouse", header: "Bodega", render: (s) => warehouses.find((w) => w.id === s.warehouseId)?.name ?? "—" },
+    { key: "register", header: "Caja", render: (s) => registers.find((r) => r.id === s.cashRegisterId)?.name ?? "—" },
     { key: "openedAt", header: "Apertura", render: (s) => new Date(s.openedAt).toLocaleString() },
     { key: "opening", header: "Monto apertura", render: (s) => s.openingAmount },
     { key: "closedAt", header: "Cierre", render: (s) => (s.closedAt ? new Date(s.closedAt).toLocaleString() : "—") },

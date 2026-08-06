@@ -8,6 +8,7 @@ import {
   type StockMovementFilters,
   type Warehouse,
 } from "@/pages/warehouses/api/warehouses.api";
+import { CashRegistersApi, type CashRegister } from "@/pages/warehouses/api/cash-registers.api";
 
 function errorMessage(err: unknown): string {
   return err instanceof ApiError ? err.message : "Ocurrió un error inesperado";
@@ -35,6 +36,30 @@ export function useWarehouses() {
   }, [refetch]);
 
   return { warehouses, loading, error, refetch };
+}
+
+export function useCashRegisters(warehouseId?: string) {
+  const [registers, setRegisters] = useState<CashRegister[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  const refetch = useCallback(async () => {
+    setLoading(true);
+    setError("");
+    try {
+      setRegisters(await CashRegistersApi.list(warehouseId));
+    } catch (err) {
+      setError(errorMessage(err));
+    } finally {
+      setLoading(false);
+    }
+  }, [warehouseId]);
+
+  useEffect(() => {
+    void refetch();
+  }, [refetch]);
+
+  return { registers, loading, error, refetch };
 }
 
 export function useStock(warehouseId: string | null) {

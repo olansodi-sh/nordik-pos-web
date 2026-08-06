@@ -3,14 +3,16 @@ import { Warehouse as WarehouseIcon } from "lucide-react";
 import { PageHeader } from "@/components/page-header/page-header.component";
 import { Card } from "@/components/cards/card.component";
 import { WarehousesTab } from "@/pages/warehouses/components/warehouses-tab.component";
+import { CashRegistersTab } from "@/pages/warehouses/components/cash-registers-tab.component";
 import { InventoryTab } from "@/pages/warehouses/components/inventory-tab.component";
 import { StockMovementsTab } from "@/pages/warehouses/components/stock-movements-tab.component";
 import { StockCountTab } from "@/pages/warehouses/components/stock-count-tab.component";
 
-type TabKey = "warehouses" | "inventory" | "movements" | "count";
+type TabKey = "warehouses" | "registers" | "inventory" | "movements" | "count";
 
 const TABS: { key: TabKey; label: string }[] = [
   { key: "warehouses", label: "Bodegas" },
+  { key: "registers", label: "Cajas" },
   { key: "inventory", label: "Inventario" },
   { key: "movements", label: "Movimientos" },
   { key: "count", label: "Conteo físico" },
@@ -42,6 +44,7 @@ const WarehousesPage = () => {
 
       <Card>
         {tab === "warehouses" && <WarehousesTab />}
+        {tab === "registers" && <CashRegistersTab />}
         {tab === "inventory" && <InventoryTab />}
         {tab === "movements" && <StockMovementsTab />}
         {tab === "count" && <StockCountTab />}

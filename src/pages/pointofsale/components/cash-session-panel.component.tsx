@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Wallet, LogOut } from "lucide-react";
 import { Button } from "@/components/button/button.component";
 import { Card } from "@/components/cards/card.component";
@@ -9,7 +9,7 @@ import { Select } from "@/components/form/select.component";
 import { useToast } from "@/components/toast/toast.store";
 import { ApiError } from "@/services/http/httpClient";
 import { CashSessionsApi, type CashSession } from "@/pages/pointofsale/api/pointofsale.api";
-import { useWarehouses } from "@/pages/warehouses/hooks/warehouses.hook";
+import { useCashRegisters, useWarehouses } from "@/pages/warehouses/hooks/warehouses.hook";
 
 interface CashSessionPanelProps {
   session: CashSession | null;
@@ -18,21 +18,40 @@ interface CashSessionPanelProps {
 
 export function CashSessionPanel({ session, onChanged }: CashSessionPanelProps) {
   const { warehouses } = useWarehouses();
+  const { registers: allRegisters } = useCashRegisters();
   const { notifyError, notifySuccess } = useToast();
 
   const [warehouseId, setWarehouseId] = useState("");
+  const [cashRegisterId, setCashRegisterId] = useState("");
   const [openingAmount, setOpeningAmount] = useState("0");
   const [opening, setOpening] = useState(false);
+  const [occupiedRegisterIds, setOccupiedRegisterIds] = useState<Set<string>>(new Set());
 
   const [closeOpen, setCloseOpen] = useState(false);
   const [countedAmount, setCountedAmount] = useState("0");
   const [closing, setClosing] = useState(false);
+
+  const registersForWarehouse = allRegisters.filter((r) => r.warehouseId === warehouseId);
+
+  useEffect(() => {
+    if (session || !warehouseId) return;
+    void CashSessionsApi.list().then((sessions) => {
+      setOccupiedRegisterIds(
+        new Set(
+          sessions
+            .filter((s) => s.status === "open" && s.cashRegisterId)
+            .map((s) => s.cashRegisterId as string),
+        ),
+      );
+    });
+  }, [session, warehouseId]);
 
   async function onOpen() {
     setOpening(true);
     try {
       await CashSessionsApi.open({
         warehouseId: warehouseId || undefined,
+        cashRegisterId: cashRegisterId || undefined,
         openingAmount: Number(openingAmount),
       });
       notifySuccess("Caja abierta");
@@ -71,12 +90,30 @@ export function CashSessionPanel({ session, onChanged }: CashSessionPanelProps) 
           <Field label="Bodega (opcional)">
             <Select
               value={warehouseId}
-              onChange={(e) => setWarehouseId(e.target.value)}
+              onChange={(e) => {
+                setWarehouseId(e.target.value);
+                setCashRegisterId("");
+              }}
               placeholder="Sin bodega"
               options={warehouses.map((w) => ({ value: w.id, label: w.name }))}
               className="min-w-[200px]"
             />
           </Field>
+          {registersForWarehouse.length > 0 && (
+            <Field label="Caja">
+              <Select
+                value={cashRegisterId}
+                onChange={(e) => setCashRegisterId(e.target.value)}
+                placeholder="Sin caja"
+                options={registersForWarehouse.map((r) => ({
+                  value: r.id,
+                  label: occupiedRegisterIds.has(r.id) ? `${r.name} (ocupada)` : r.name,
+                  disabled: occupiedRegisterIds.has(r.id),
+                }))}
+                className="min-w-[160px]"
+              />
+            </Field>
+          )}
           <Field label="Monto de apertura">
             <Input
               type="number"
@@ -98,6 +135,8 @@ export function CashSessionPanel({ session, onChanged }: CashSessionPanelProps) 
     <Card className="mb-6 flex items-center justify-between">
       <div className="flex items-center gap-2 text-sm text-on-surface">
         <Wallet size={16} className="text-primary" />
+        {session.cashRegisterId &&
+          `${allRegisters.find((r) => r.id === session.cashRegisterId)?.name ?? "Caja"} — `}
         Caja abierta desde {new Date(session.openedAt).toLocaleString()} — apertura {session.openingAmount}
       </div>
       <Button variant="secondary" onClick={() => setCloseOpen(true)}>

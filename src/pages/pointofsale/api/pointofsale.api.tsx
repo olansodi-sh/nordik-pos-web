@@ -6,6 +6,7 @@ export interface CashSession {
   id: string;
   userId: string;
   warehouseId: string | null;
+  cashRegisterId: string | null;
   openingAmount: number;
   countedAmount: number | null;
   expectedAmount: number | null;
@@ -17,6 +18,7 @@ export interface CashSession {
 
 export interface OpenCashSessionPayload {
   warehouseId?: string;
+  cashRegisterId?: string;
   openingAmount: number;
 }
 

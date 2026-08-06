@@ -3,6 +3,7 @@ import type { SelectHTMLAttributes } from "react";
 export interface SelectOption {
   value: string;
   label: string;
+  disabled?: boolean;
 }
 
 interface SelectProps extends SelectHTMLAttributes<HTMLSelectElement> {
@@ -22,7 +23,7 @@ export function Select({ options, placeholder, className = "", ...rest }: Select
         </option>
       )}
       {options.map((opt) => (
-        <option key={opt.value} value={opt.value}>
+        <option key={opt.value} value={opt.value} disabled={opt.disabled}>
           {opt.label}
         </option>
       ))}
