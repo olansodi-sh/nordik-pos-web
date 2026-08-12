@@ -23,7 +23,7 @@ export function InventoryTab() {
   const [adjustMode, setAdjustMode] = useState<StockAdjustMode>("set");
   const [adjusting, setAdjusting] = useState(false);
 
-  const stockableProducts = products.filter((p) => p.tracksInventory && !p.hasVariants);
+  const stockableProducts = products.filter((p) => p.tracksInventory);
 
   async function onAdjust() {
     if (!selectedWarehouseId || !adjustProductId) return;
@@ -66,10 +66,7 @@ export function InventoryTab() {
               {
                 key: "product",
                 header: "Producto",
-                render: (s) =>
-                  s.productId
-                    ? (products.find((p) => p.id === s.productId)?.name ?? s.productId)
-                    : `Variante ${s.variantId?.slice(0, 8)}`,
+                render: (s) => products.find((p) => p.id === s.productId)?.name ?? s.productId,
               },
               { key: "quantity", header: "Cantidad", render: (s) => s.quantity },
             ]}
@@ -81,10 +78,7 @@ export function InventoryTab() {
 
           <div className="mt-6 rounded-xl border border-outline p-4">
             <h4 className="mb-3 text-sm font-semibold text-on-surface">Ajustar stock</h4>
-            <p className="mb-3 text-xs text-secondary">
-              Solo productos sin variantes que controlan inventario. El ajuste de stock por variante se hace
-              próximamente desde el detalle de variantes.
-            </p>
+            <p className="mb-3 text-xs text-secondary">Solo productos que controlan inventario.</p>
             <div className="grid grid-cols-3 gap-4">
               <Field label="Producto">
                 <Select

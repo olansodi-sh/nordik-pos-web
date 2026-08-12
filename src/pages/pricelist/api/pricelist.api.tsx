@@ -14,20 +14,18 @@ export interface CreatePriceListPayload {
 export interface PriceListItem {
   id: string;
   priceListId: string;
-  variantId: string | null;
-  productId: string | null;
+  productId: string;
   price: number;
 }
 
 export interface SetPriceListItemPayload {
-  variantId?: string;
-  productId?: string;
+  productId: string;
   price: number;
 }
 
 export type PromotionType = "percentage" | "fixed_amount" | "buy_x_get_y";
-export type PromotionScope = "all" | "category" | "product" | "variant";
-export type PromotionTargetType = "category" | "product" | "variant";
+export type PromotionScope = "all" | "category" | "product";
+export type PromotionTargetType = "category" | "product";
 
 export interface Promotion {
   id: string;

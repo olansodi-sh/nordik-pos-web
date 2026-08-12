@@ -31,7 +31,6 @@ export interface Product {
   brandId: string | null;
   unit: string;
   tracksInventory: boolean;
-  hasVariants: boolean;
   active: boolean;
   customFields: Record<string, unknown>;
 }
@@ -44,36 +43,16 @@ export interface CreateProductPayload {
   brandId?: string;
   unit?: string;
   tracksInventory?: boolean;
-  hasVariants?: boolean;
   barcode?: string;
   customFields?: Record<string, unknown>;
 }
 
-export type UpdateProductPayload = Partial<
-  Omit<CreateProductPayload, "hasVariants" | "barcode">
->;
-
-export interface ProductVariant {
-  id: string;
-  productId: string;
-  cost: number;
-  listPrice: number | null;
-  discountPercent: number;
-  active: boolean;
-}
-
-export interface CreateVariantPayload {
-  cost?: number;
-  listPrice?: number;
-  discountPercent?: number;
-  barcode?: string;
-}
+export type UpdateProductPayload = Partial<Omit<CreateProductPayload, "barcode">>;
 
 export interface Barcode {
   id: string;
   code: string;
   productId: string | null;
-  variantId: string | null;
 }
 
 export class CategoriesApi {
@@ -124,10 +103,10 @@ export class ProductsApi {
     return data;
   }
 
-  static async lookupBarcode(code: string): Promise<Barcode & { product: Product | null; variant: ProductVariant | null }> {
-    const { data } = await httpClient.get<
-      Barcode & { product: Product | null; variant: ProductVariant | null }
-    >(`/products/barcode-lookup/${encodeURIComponent(code)}`);
+  static async lookupBarcode(code: string): Promise<Barcode & { product: Product | null }> {
+    const { data } = await httpClient.get<Barcode & { product: Product | null }>(
+      `/products/barcode-lookup/${encodeURIComponent(code)}`,
+    );
     return data;
   }
 
@@ -143,31 +122,5 @@ export class ProductsApi {
 
   static async remove(id: string): Promise<void> {
     await httpClient.delete(`/products/${id}`);
-  }
-}
-
-export class ProductVariantsApi {
-  static async list(productId: string): Promise<ProductVariant[]> {
-    const { data } = await httpClient.get<ProductVariant[]>(`/products/${productId}/variants`);
-    return data;
-  }
-
-  static async barcodes(productId: string, variantId: string): Promise<Barcode[]> {
-    const { data } = await httpClient.get<Barcode[]>(
-      `/products/${productId}/variants/${variantId}/barcodes`,
-    );
-    return data;
-  }
-
-  static async create(productId: string, payload: CreateVariantPayload): Promise<ProductVariant> {
-    const { data } = await httpClient.post<ProductVariant>(
-      `/products/${productId}/variants`,
-      payload,
-    );
-    return data;
-  }
-
-  static async remove(productId: string, variantId: string): Promise<void> {
-    await httpClient.delete(`/products/${productId}/variants/${variantId}`);
   }
 }

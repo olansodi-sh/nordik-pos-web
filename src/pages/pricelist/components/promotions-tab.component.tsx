@@ -28,7 +28,6 @@ const SCOPE_LABELS: Record<PromotionScope, string> = {
   all: "Todo el catálogo",
   category: "Una categoría",
   product: "Un producto",
-  variant: "Una variante",
 };
 
 export function PromotionsTab() {

@@ -22,10 +22,7 @@ export function StockCountTab() {
   const [applying, setApplying] = useState<string | null>(null);
   const [reason, setReason] = useState("Conteo físico");
 
-  const stockableProducts = useMemo(
-    () => products.filter((p) => p.tracksInventory && !p.hasVariants),
-    [products],
-  );
+  const stockableProducts = useMemo(() => products.filter((p) => p.tracksInventory), [products]);
 
   const rows = stockableProducts.map((p) => {
     const existing = stock.find((s) => s.productId === p.id);

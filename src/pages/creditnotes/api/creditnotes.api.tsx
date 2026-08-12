@@ -15,8 +15,7 @@ export interface CreditNote {
 }
 
 export interface RestockLineInput {
-  variantId?: string;
-  productId?: string;
+  productId: string;
   warehouseId: string;
   quantity: number;
 }

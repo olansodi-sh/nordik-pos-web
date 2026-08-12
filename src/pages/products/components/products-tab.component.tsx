@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Plus, Trash2, ListTree, Package } from "lucide-react";
+import { Plus, Trash2, Package } from "lucide-react";
 import { Button } from "@/components/button/button.component";
 import { Table, type TableColumn } from "@/components/table/table.component";
 import { Modal } from "@/components/modal/modal.component";
@@ -12,7 +12,6 @@ import { ApiError } from "@/services/http/httpClient";
 import { ProductsApi, type Brand, type Category, type Product } from "@/pages/products/api/products.api";
 import { useProducts } from "@/pages/products/hooks/products.hook";
 import { useCustomFields } from "@/pages/business/hooks/business.hook";
-import { VariantsModal } from "@/pages/products/components/variants-modal.component";
 
 interface ProductsTabProps {
   categories: Category[];
@@ -27,7 +26,6 @@ const emptyForm = {
   brandId: "",
   unit: "unidad",
   tracksInventory: true,
-  hasVariants: false,
   barcode: "",
 };
 
@@ -38,7 +36,6 @@ export function ProductsTab({ categories, brands }: ProductsTabProps) {
   const [form, setForm] = useState(emptyForm);
   const [customFieldValues, setCustomFieldValues] = useState<Record<string, string | boolean>>({});
   const [saving, setSaving] = useState(false);
-  const [variantsProduct, setVariantsProduct] = useState<Product | null>(null);
 
   const { fields: customFieldDefs } = useCustomFields("product");
 
@@ -57,8 +54,7 @@ export function ProductsTab({ categories, brands }: ProductsTabProps) {
         brandId: form.brandId || undefined,
         unit: form.unit || undefined,
         tracksInventory: form.tracksInventory,
-        hasVariants: form.hasVariants,
-        barcode: !form.hasVariants && form.barcode ? form.barcode : undefined,
+        barcode: form.barcode || undefined,
         customFields: Object.keys(customFieldValues).length > 0 ? customFieldValues : undefined,
       });
       notifySuccess("Producto creado");
@@ -92,7 +88,6 @@ export function ProductsTab({ categories, brands }: ProductsTabProps) {
       render: (p) => categories.find((c) => c.id === p.categoryId)?.name ?? "—",
     },
     { key: "unit", header: "Unidad", render: (p) => p.unit },
-    { key: "variants", header: "Variantes", render: (p) => (p.hasVariants ? "Sí" : "No") },
     { key: "active", header: "Estado", render: (p) => (p.active ? "Activo" : "Inactivo") },
     {
       key: "actions",
@@ -100,16 +95,6 @@ export function ProductsTab({ categories, brands }: ProductsTabProps) {
       className: "text-right",
       render: (p) => (
         <div className="flex items-center justify-end gap-1">
-          {p.hasVariants && (
-            <button
-              type="button"
-              onClick={() => setVariantsProduct(p)}
-              className="rounded-md p-1.5 text-primary transition-colors hover:bg-surface-container"
-              title="Ver variantes"
-            >
-              <ListTree size={15} />
-            </button>
-          )}
           <button
             type="button"
             onClick={() => void onDelete(p.id)}
@@ -182,11 +167,9 @@ export function ProductsTab({ categories, brands }: ProductsTabProps) {
           <Field label="Unidad">
             <Input value={form.unit} onChange={(e) => setForm({ ...form, unit: e.target.value })} />
           </Field>
-          {!form.hasVariants && (
-            <Field label="Código de barras (opcional)">
-              <Input value={form.barcode} onChange={(e) => setForm({ ...form, barcode: e.target.value })} />
-            </Field>
-          )}
+          <Field label="Código de barras (opcional)">
+            <Input value={form.barcode} onChange={(e) => setForm({ ...form, barcode: e.target.value })} />
+          </Field>
           <div className="col-span-2 flex flex-col gap-2">
             <Field label="Descripción">
               <Input value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} />
@@ -199,14 +182,6 @@ export function ProductsTab({ categories, brands }: ProductsTabProps) {
               onChange={(e) => setForm({ ...form, tracksInventory: e.target.checked })}
             />
             Controla inventario
-          </label>
-          <label className="flex items-center gap-2 text-sm text-on-surface-variant">
-            <input
-              type="checkbox"
-              checked={form.hasVariants}
-              onChange={(e) => setForm({ ...form, hasVariants: e.target.checked })}
-            />
-            Maneja variantes (talla, color...)
           </label>
           {customFieldDefs.length > 0 && (
             <div className="col-span-2 grid grid-cols-2 gap-4">
@@ -258,10 +233,6 @@ export function ProductsTab({ categories, brands }: ProductsTabProps) {
           )}
         </div>
       </Modal>
-
-      {variantsProduct && (
-        <VariantsModal product={variantsProduct} onClose={() => setVariantsProduct(null)} />
-      )}
     </div>
   );
 }

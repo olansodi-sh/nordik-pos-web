@@ -4,11 +4,9 @@ import {
   BrandsApi,
   CategoriesApi,
   ProductsApi,
-  ProductVariantsApi,
   type Brand,
   type Category,
   type Product,
-  type ProductVariant,
 } from "@/pages/products/api/products.api";
 
 function errorMessage(err: unknown): string {
@@ -85,28 +83,4 @@ export function useProducts() {
   }, [refetch]);
 
   return { products, loading, error, refetch };
-}
-
-export function useProductVariants(productId: string | null) {
-  const [variants, setVariants] = useState<ProductVariant[]>([]);
-  const [loading, setLoading] = useState(false);
-
-  const refetch = useCallback(async () => {
-    if (!productId) {
-      setVariants([]);
-      return;
-    }
-    setLoading(true);
-    try {
-      setVariants(await ProductVariantsApi.list(productId));
-    } finally {
-      setLoading(false);
-    }
-  }, [productId]);
-
-  useEffect(() => {
-    void refetch();
-  }, [refetch]);
-
-  return { variants, loading, refetch };
 }

@@ -18,8 +18,7 @@ export interface Quote {
 export interface QuoteLine {
   id: string;
   quoteId: string;
-  variantId: string | null;
-  productId: string | null;
+  productId: string;
   description: string;
   quantity: number;
   unitPrice: number;
@@ -28,8 +27,7 @@ export interface QuoteLine {
 }
 
 export interface CreateQuoteLinePayload {
-  variantId?: string;
-  productId?: string;
+  productId: string;
   description?: string;
   quantity: number;
   unitPrice: number;

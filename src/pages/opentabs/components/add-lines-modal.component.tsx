@@ -22,7 +22,7 @@ export function AddLinesModal({ sale, onClose, onAdded }: AddLinesModalProps) {
   const [lines, setLines] = useState<CreateSaleLinePayload[]>([{ productId: "", quantity: 1 }]);
   const [saving, setSaving] = useState(false);
 
-  const stockableProducts = products.filter((p) => !p.hasVariants);
+  const stockableProducts = products;
 
   function updateLine(index: number, patch: Partial<CreateSaleLinePayload>) {
     setLines((prev) => prev.map((l, i) => (i === index ? { ...l, ...patch } : l)));

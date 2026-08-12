@@ -28,8 +28,7 @@ export interface Sale {
 export interface SaleLine {
   id: string;
   saleId: string;
-  variantId: string | null;
-  productId: string | null;
+  productId: string;
   description: string;
   quantity: number;
   unitPrice: number;
@@ -38,8 +37,7 @@ export interface SaleLine {
 }
 
 export interface CreateSaleLinePayload {
-  variantId?: string;
-  productId?: string;
+  productId: string;
   quantity: number;
   unitPrice?: number;
   discount?: number;

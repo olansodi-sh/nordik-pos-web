@@ -3,8 +3,7 @@ import { httpClient } from "@/services/http/httpClient";
 export type RecurringInvoiceFrequency = "weekly" | "monthly";
 
 export interface RecurringInvoiceLine {
-  variantId?: string;
-  productId?: string;
+  productId: string;
   quantity: number;
   unitPrice: number;
 }

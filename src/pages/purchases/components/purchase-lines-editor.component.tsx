@@ -13,7 +13,7 @@ interface PurchaseLinesEditorProps {
 }
 
 export function PurchaseLinesEditor({ products, lines, onChange }: PurchaseLinesEditorProps) {
-  const stockableProducts = products.filter((p) => !p.hasVariants);
+  const stockableProducts = products;
 
   function addLine() {
     onChange([...lines, { productId: "", quantity: 1, unitCost: 0 }]);
@@ -29,9 +29,6 @@ export function PurchaseLinesEditor({ products, lines, onChange }: PurchaseLines
 
   return (
     <div className="flex flex-col gap-3">
-      <p className="text-xs text-secondary">
-        Por ahora solo productos sin variantes. La recepción por variante se agrega próximamente.
-      </p>
       {lines.map((line, i) => (
         <div key={i} className="grid grid-cols-[1fr_100px_120px_32px] items-end gap-2">
           <Field label="Producto">

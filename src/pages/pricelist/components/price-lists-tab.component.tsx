@@ -30,7 +30,7 @@ export function PriceListsTab() {
   const [itemPrice, setItemPrice] = useState("0");
   const [settingPrice, setSettingPrice] = useState(false);
 
-  const stockableProducts = products.filter((p) => !p.hasVariants);
+  const stockableProducts = products;
 
   async function onCreate() {
     setSaving(true);
@@ -137,10 +137,7 @@ export function PriceListsTab() {
                 {
                   key: "product",
                   header: "Producto",
-                  render: (i) =>
-                    i.productId
-                      ? (products.find((p) => p.id === i.productId)?.name ?? i.productId)
-                      : `Variante ${i.variantId?.slice(0, 8)}`,
+                  render: (i) => products.find((p) => p.id === i.productId)?.name ?? i.productId,
                 },
                 { key: "price", header: "Precio", render: (i) => i.price },
               ]}

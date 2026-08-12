@@ -106,7 +106,6 @@ export function useStockMovements(filters: StockMovementFilters, enabled: boolea
     enabled,
     filters.warehouseId,
     filters.productId,
-    filters.variantId,
     filters.type,
     filters.from,
     filters.to,

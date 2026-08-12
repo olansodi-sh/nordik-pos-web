@@ -2,14 +2,13 @@ import { useMemo, useState } from "react";
 import { Search, Trash2, ShoppingCart, Barcode as BarcodeIcon } from "lucide-react";
 import { Button } from "@/components/button/button.component";
 import { Card } from "@/components/cards/card.component";
-import { Modal } from "@/components/modal/modal.component";
 import { Field } from "@/components/form/field.component";
 import { Input } from "@/components/form/input.component";
 import { Select } from "@/components/form/select.component";
 import { EmptyState } from "@/components/empty-state/empty-state.component";
 import { useToast } from "@/components/toast/toast.store";
 import { ApiError } from "@/services/http/httpClient";
-import { ProductsApi, ProductVariantsApi, type Product, type ProductVariant } from "@/pages/products/api/products.api";
+import { ProductsApi, type Product } from "@/pages/products/api/products.api";
 import { useProducts } from "@/pages/products/hooks/products.hook";
 import { useWarehouses } from "@/pages/warehouses/hooks/warehouses.hook";
 import { useCustomers } from "@/pages/thirdparty/hooks/thirdparty.hook";
@@ -20,8 +19,7 @@ import { useCustomFields } from "@/pages/business/hooks/business.hook";
 
 interface CartLine {
   key: string;
-  productId?: string;
-  variantId?: string;
+  productId: string;
   name: string;
   quantity: number;
 }
@@ -57,7 +55,6 @@ export function PosCart({ session }: PosCartProps) {
   const [search, setSearch] = useState("");
   const [barcodeSearching, setBarcodeSearching] = useState(false);
   const [lines, setLines] = useState<CartLine[]>([]);
-  const [variantPicker, setVariantPicker] = useState<{ product: Product; variants: ProductVariant[] } | null>(null);
 
   const [createdSale, setCreatedSale] = useState<Sale | null>(null);
   const [confirming, setConfirming] = useState(false);
@@ -73,30 +70,24 @@ export function PosCart({ session }: PosCartProps) {
   }, [search, products]);
 
   function estimatedPrice(line: CartLine): number | null {
-    const item = priceItems.find((i) => (line.variantId ? i.variantId === line.variantId : i.productId === line.productId));
+    const item = priceItems.find((i) => i.productId === line.productId);
     return item ? item.price : null;
   }
 
   const estimatedSubtotal = lines.reduce((sum, l) => sum + (estimatedPrice(l) ?? 0) * l.quantity, 0);
 
-  function addLine(params: { productId?: string; variantId?: string; name: string }) {
+  function addLine(params: { productId: string; name: string }) {
     setLines((prev) => {
-      const key = params.variantId ?? params.productId ?? params.name;
-      const existing = prev.find((l) => (l.variantId ?? l.productId) === key);
+      const existing = prev.find((l) => l.productId === params.productId);
       if (existing) {
         return prev.map((l) => (l === existing ? { ...l, quantity: l.quantity + 1 } : l));
       }
-      return [...prev, { key, productId: params.productId, variantId: params.variantId, name: params.name, quantity: 1 }];
+      return [...prev, { key: params.productId, productId: params.productId, name: params.name, quantity: 1 }];
     });
     setSearch("");
   }
 
-  async function onSelectProduct(p: Product) {
-    if (p.hasVariants) {
-      const variants = await ProductVariantsApi.list(p.id);
-      setVariantPicker({ product: p, variants });
-      return;
-    }
+  function onSelectProduct(p: Product) {
     addLine({ productId: p.id, name: p.name });
   }
 
@@ -105,9 +96,7 @@ export function PosCart({ session }: PosCartProps) {
     setBarcodeSearching(true);
     try {
       const found = await ProductsApi.lookupBarcode(search.trim());
-      if (found.variant && found.product) {
-        addLine({ variantId: found.variant.id, name: found.product.name });
-      } else if (found.product) {
+      if (found.product) {
         addLine({ productId: found.product.id, name: found.product.name });
       }
     } catch (err) {
@@ -141,7 +130,7 @@ export function PosCart({ session }: PosCartProps) {
         cashSessionId: session.id,
         label: label || undefined,
         customFields: Object.keys(customFieldValues).length > 0 ? customFieldValues : undefined,
-        lines: lines.map((l) => ({ productId: l.productId, variantId: l.variantId, quantity: l.quantity })),
+        lines: lines.map((l) => ({ productId: l.productId, quantity: l.quantity })),
       });
       setCreatedSale(sale);
       setPayAmount(String(sale.total));
@@ -347,7 +336,7 @@ export function PosCart({ session }: PosCartProps) {
                   <button
                     key={p.id}
                     type="button"
-                    onClick={() => void onSelectProduct(p)}
+                    onClick={() => onSelectProduct(p)}
                     className="flex w-full items-center justify-between px-4 py-2 text-left text-sm hover:bg-surface-container"
                   >
                     <span>{p.name}</span>
@@ -412,30 +401,6 @@ export function PosCart({ session }: PosCartProps) {
           </Button>
         </Card>
       </div>
-
-      {variantPicker && (
-        <Modal open title={`Elegir variante — ${variantPicker.product.name}`} onClose={() => setVariantPicker(null)}>
-          <div className="flex flex-col gap-2">
-            {variantPicker.variants.length === 0 && (
-              <p className="text-sm text-secondary">Este producto no tiene variantes creadas.</p>
-            )}
-            {variantPicker.variants.map((v) => (
-              <button
-                key={v.id}
-                type="button"
-                onClick={() => {
-                  addLine({ variantId: v.id, name: `${variantPicker.product.name} (variante)` });
-                  setVariantPicker(null);
-                }}
-                className="flex items-center justify-between rounded-md border border-outline px-3 py-2 text-left text-sm hover:bg-surface-container"
-              >
-                <span>Costo {v.cost}</span>
-                <span>{v.listPrice ?? "—"}</span>
-              </button>
-            ))}
-          </div>
-        </Modal>
-      )}
     </div>
   );
 }

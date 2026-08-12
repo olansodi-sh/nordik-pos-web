@@ -13,8 +13,7 @@ export interface PurchaseOrder {
 }
 
 export interface PurchaseLineInput {
-  variantId?: string;
-  productId?: string;
+  productId: string;
   description?: string;
   quantity: number;
   unitCost: number;
@@ -22,8 +21,7 @@ export interface PurchaseLineInput {
 
 export interface PurchaseLine {
   id: string;
-  variantId: string | null;
-  productId: string | null;
+  productId: string;
   description: string;
   quantity: number;
   unitCost: number;

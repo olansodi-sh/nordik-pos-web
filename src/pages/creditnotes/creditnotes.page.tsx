@@ -150,7 +150,7 @@ const CreditNotesPage = () => {
                   value={restockProductId}
                   onChange={(e) => setRestockProductId(e.target.value)}
                   placeholder="Selecciona un producto"
-                  options={products.filter((p) => !p.hasVariants).map((p) => ({ value: p.id, label: p.name }))}
+                  options={products.map((p) => ({ value: p.id, label: p.name }))}
                 />
               </Field>
               <Field label="Bodega">

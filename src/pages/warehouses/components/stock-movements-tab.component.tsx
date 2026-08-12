@@ -44,10 +44,7 @@ export function StockMovementsTab() {
     {
       key: "product",
       header: "Producto",
-      render: (m) =>
-        m.productId
-          ? (products.find((p) => p.id === m.productId)?.name ?? m.productId)
-          : `Variante ${m.variantId?.slice(0, 8)}`,
+      render: (m) => products.find((p) => p.id === m.productId)?.name ?? m.productId,
     },
     {
       key: "warehouse",

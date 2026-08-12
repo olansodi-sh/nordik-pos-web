@@ -14,8 +14,7 @@ export interface CreateWarehousePayload {
 
 export interface Stock {
   id: string;
-  variantId: string | null;
-  productId: string | null;
+  productId: string;
   warehouseId: string;
   quantity: number;
 }
@@ -24,8 +23,7 @@ export type StockAdjustMode = "set" | "add";
 
 export interface AdjustStockPayload {
   warehouseId: string;
-  variantId?: string;
-  productId?: string;
+  productId: string;
   quantity: number;
   mode: StockAdjustMode;
 }
@@ -42,8 +40,7 @@ export type StockMovementType =
 
 export interface StockMovement {
   id: string;
-  variantId: string | null;
-  productId: string | null;
+  productId: string;
   warehouseId: string;
   quantityDelta: number;
   quantityAfter: number;
@@ -57,7 +54,6 @@ export interface StockMovement {
 
 export interface StockMovementFilters {
   warehouseId?: string;
-  variantId?: string;
   productId?: string;
   type?: StockMovementType;
   from?: string;
@@ -66,8 +62,7 @@ export interface StockMovementFilters {
 
 export interface ApplyStockCountPayload {
   warehouseId: string;
-  variantId?: string;
-  productId?: string;
+  productId: string;
   countedQuantity: number;
   reason?: string;
 }

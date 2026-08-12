@@ -13,7 +13,7 @@ interface QuoteLinesEditorProps {
 }
 
 export function QuoteLinesEditor({ products, lines, onChange }: QuoteLinesEditorProps) {
-  const stockableProducts = products.filter((p) => !p.hasVariants);
+  const stockableProducts = products;
 
   function addLine() {
     onChange([...lines, { productId: "", quantity: 1, unitPrice: 0, discount: 0 }]);
@@ -29,7 +29,6 @@ export function QuoteLinesEditor({ products, lines, onChange }: QuoteLinesEditor
 
   return (
     <div className="flex flex-col gap-3">
-      <p className="text-xs text-secondary">Por ahora solo productos sin variantes.</p>
       {lines.map((line, i) => (
         <div key={i} className="grid grid-cols-[1fr_90px_100px_100px_32px] items-end gap-2">
           <Field label="Producto">
