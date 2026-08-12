@@ -22,45 +22,6 @@ export interface CreateBrandPayload {
   active?: boolean;
 }
 
-export type AttributeType = "text" | "number" | "boolean" | "select";
-
-export interface AttributeDefinition {
-  id: string;
-  name: string;
-  type: AttributeType;
-  unit: string | null;
-  isVariant: boolean;
-  options: string[] | null;
-}
-
-export interface CreateAttributeDefinitionPayload {
-  name: string;
-  type: AttributeType;
-  unit?: string;
-  isVariant?: boolean;
-  options?: string[];
-}
-
-export interface CategoryAttribute {
-  categoryId: string;
-  attributeDefinitionId: string;
-  required: boolean;
-  active: boolean;
-  attributeDefinition: AttributeDefinition;
-}
-
-export interface AttributeValueInput {
-  attributeDefinitionId: string;
-  value: string;
-}
-
-export interface ProductAttributeValue {
-  productId: string;
-  attributeDefinitionId: string;
-  value: string;
-  attributeDefinition: AttributeDefinition;
-}
-
 export interface Product {
   id: string;
   sku: string;
@@ -72,6 +33,7 @@ export interface Product {
   tracksInventory: boolean;
   hasVariants: boolean;
   active: boolean;
+  customFields: Record<string, unknown>;
 }
 
 export interface CreateProductPayload {
@@ -84,7 +46,7 @@ export interface CreateProductPayload {
   tracksInventory?: boolean;
   hasVariants?: boolean;
   barcode?: string;
-  attributes?: AttributeValueInput[];
+  customFields?: Record<string, unknown>;
 }
 
 export type UpdateProductPayload = Partial<
@@ -105,7 +67,6 @@ export interface CreateVariantPayload {
   listPrice?: number;
   discountPercent?: number;
   barcode?: string;
-  attributes?: AttributeValueInput[];
 }
 
 export interface Barcode {
@@ -147,47 +108,6 @@ export class BrandsApi {
   }
 }
 
-export class AttributeDefinitionsApi {
-  static async list(): Promise<AttributeDefinition[]> {
-    const { data } = await httpClient.get<AttributeDefinition[]>("/attribute-definitions");
-    return data;
-  }
-
-  static async create(payload: CreateAttributeDefinitionPayload): Promise<AttributeDefinition> {
-    const { data } = await httpClient.post<AttributeDefinition>("/attribute-definitions", payload);
-    return data;
-  }
-
-  static async remove(id: string): Promise<void> {
-    await httpClient.delete(`/attribute-definitions/${id}`);
-  }
-}
-
-export class CategoryAttributesApi {
-  static async list(categoryId: string): Promise<CategoryAttribute[]> {
-    const { data } = await httpClient.get<CategoryAttribute[]>(
-      `/categories/${categoryId}/attributes`,
-    );
-    return data;
-  }
-
-  static async assign(
-    categoryId: string,
-    attributeDefinitionId: string,
-    required?: boolean,
-  ): Promise<CategoryAttribute> {
-    const { data } = await httpClient.post<CategoryAttribute>(
-      `/categories/${categoryId}/attributes`,
-      { attributeDefinitionId, required },
-    );
-    return data;
-  }
-
-  static async unassign(categoryId: string, attributeDefinitionId: string): Promise<void> {
-    await httpClient.delete(`/categories/${categoryId}/attributes/${attributeDefinitionId}`);
-  }
-}
-
 export class ProductsApi {
   static async list(): Promise<Product[]> {
     const { data } = await httpClient.get<Product[]>("/products");
@@ -196,11 +116,6 @@ export class ProductsApi {
 
   static async findOne(id: string): Promise<Product> {
     const { data } = await httpClient.get<Product>(`/products/${id}`);
-    return data;
-  }
-
-  static async attributeValues(id: string): Promise<ProductAttributeValue[]> {
-    const { data } = await httpClient.get<ProductAttributeValue[]>(`/products/${id}/attributes`);
     return data;
   }
 

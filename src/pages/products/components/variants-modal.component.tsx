@@ -8,9 +8,7 @@ import { Input } from "@/components/form/input.component";
 import { useToast } from "@/components/toast/toast.store";
 import { ApiError } from "@/services/http/httpClient";
 import { ProductVariantsApi, type Product, type ProductVariant } from "@/pages/products/api/products.api";
-import { useCategoryAttributes, useProductVariants } from "@/pages/products/hooks/products.hook";
-import { DynamicAttributesFields } from "@/pages/products/components/dynamic-attributes-fields.component";
-import { buildAttributeValuesPayload } from "@/pages/products/utils/attribute-values.util";
+import { useProductVariants } from "@/pages/products/hooks/products.hook";
 
 interface VariantsModalProps {
   product: Product;
@@ -19,12 +17,10 @@ interface VariantsModalProps {
 
 export function VariantsModal({ product, onClose }: VariantsModalProps) {
   const { variants, loading, refetch } = useProductVariants(product.id);
-  const { categoryAttributes } = useCategoryAttributes(product.categoryId);
   const { notifyError, notifySuccess } = useToast();
 
   const [cost, setCost] = useState("0");
   const [listPrice, setListPrice] = useState("");
-  const [attrValues, setAttrValues] = useState<Record<string, string>>({});
   const [saving, setSaving] = useState(false);
 
   async function onCreate() {
@@ -33,12 +29,10 @@ export function VariantsModal({ product, onClose }: VariantsModalProps) {
       await ProductVariantsApi.create(product.id, {
         cost: cost ? Number(cost) : 0,
         listPrice: listPrice ? Number(listPrice) : undefined,
-        attributes: buildAttributeValuesPayload(attrValues),
       });
       notifySuccess("Variante creada");
       setCost("0");
       setListPrice("");
-      setAttrValues({});
       await refetch();
     } catch (err) {
       notifyError(err instanceof ApiError ? err.message : "No se pudo crear la variante");
@@ -92,11 +86,6 @@ export function VariantsModal({ product, onClose }: VariantsModalProps) {
             <Field label="Precio de lista">
               <Input type="number" value={listPrice} onChange={(e) => setListPrice(e.target.value)} />
             </Field>
-            <DynamicAttributesFields
-              categoryAttributes={categoryAttributes}
-              values={attrValues}
-              onChange={(id, value) => setAttrValues((prev) => ({ ...prev, [id]: value }))}
-            />
           </div>
           <div className="mt-4 flex justify-end">
             <Button onClick={() => void onCreate()} loading={saving}>

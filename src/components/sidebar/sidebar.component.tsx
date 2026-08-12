@@ -53,13 +53,23 @@ function NavGroupItem({ group, defaultOpen }: { group: NavGroup; defaultOpen: bo
 
 export function Sidebar() {
   const location = useLocation();
-  const { user } = useAuth();
+  const { user, canSeeMenu } = useAuth();
   const isSuperAdmin = user?.isSuperAdmin ?? false;
 
-  const visibleNav = DRAWER_NAV.map((entry) => {
-    if (!isNavGroup(entry)) return entry;
-    return { ...entry, children: entry.children.filter((c) => !c.superAdminOnly || isSuperAdmin) };
-  }).filter((entry) => (isNavGroup(entry) ? entry.children.length > 0 : true));
+  function isVisible(key: string, superAdminOnly?: boolean) {
+    if (superAdminOnly && !isSuperAdmin) return false;
+    return canSeeMenu(key);
+  }
+
+  const visibleNav = DRAWER_NAV.filter((entry) => isVisible(entry.key))
+    .map((entry) => {
+      if (!isNavGroup(entry)) return entry;
+      return {
+        ...entry,
+        children: entry.children.filter((c) => isVisible(c.key, c.superAdminOnly)),
+      };
+    })
+    .filter((entry) => (isNavGroup(entry) ? entry.children.length > 0 : true));
 
   return (
     <aside className="flex h-full w-64 flex-col border-r border-outline bg-surface-lowest">

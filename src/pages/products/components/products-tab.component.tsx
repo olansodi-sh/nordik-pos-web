@@ -10,9 +10,8 @@ import { EmptyState } from "@/components/empty-state/empty-state.component";
 import { useToast } from "@/components/toast/toast.store";
 import { ApiError } from "@/services/http/httpClient";
 import { ProductsApi, type Brand, type Category, type Product } from "@/pages/products/api/products.api";
-import { useCategoryAttributes, useProducts } from "@/pages/products/hooks/products.hook";
-import { DynamicAttributesFields } from "@/pages/products/components/dynamic-attributes-fields.component";
-import { buildAttributeValuesPayload } from "@/pages/products/utils/attribute-values.util";
+import { useProducts } from "@/pages/products/hooks/products.hook";
+import { useCustomFields } from "@/pages/business/hooks/business.hook";
 import { VariantsModal } from "@/pages/products/components/variants-modal.component";
 
 interface ProductsTabProps {
@@ -37,11 +36,15 @@ export function ProductsTab({ categories, brands }: ProductsTabProps) {
   const { notifyError, notifySuccess } = useToast();
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState(emptyForm);
-  const [attrValues, setAttrValues] = useState<Record<string, string>>({});
+  const [customFieldValues, setCustomFieldValues] = useState<Record<string, string | boolean>>({});
   const [saving, setSaving] = useState(false);
   const [variantsProduct, setVariantsProduct] = useState<Product | null>(null);
 
-  const { categoryAttributes } = useCategoryAttributes(form.categoryId || null);
+  const { fields: customFieldDefs } = useCustomFields("product");
+
+  const missingRequiredCustomField = customFieldDefs.some(
+    (f) => f.required && !customFieldValues[f.key],
+  );
 
   async function onCreate() {
     setSaving(true);
@@ -56,12 +59,12 @@ export function ProductsTab({ categories, brands }: ProductsTabProps) {
         tracksInventory: form.tracksInventory,
         hasVariants: form.hasVariants,
         barcode: !form.hasVariants && form.barcode ? form.barcode : undefined,
-        attributes: buildAttributeValuesPayload(attrValues),
+        customFields: Object.keys(customFieldValues).length > 0 ? customFieldValues : undefined,
       });
       notifySuccess("Producto creado");
       setOpen(false);
       setForm(emptyForm);
-      setAttrValues({});
+      setCustomFieldValues({});
       await refetch();
     } catch (err) {
       notifyError(err instanceof ApiError ? err.message : "No se pudo crear el producto");
@@ -143,7 +146,11 @@ export function ProductsTab({ categories, brands }: ProductsTabProps) {
             <Button variant="secondary" onClick={() => setOpen(false)}>
               Cancelar
             </Button>
-            <Button onClick={() => void onCreate()} loading={saving} disabled={!form.sku || !form.name}>
+            <Button
+              onClick={() => void onCreate()}
+              loading={saving}
+              disabled={!form.sku || !form.name || missingRequiredCustomField}
+            >
               Guardar
             </Button>
           </>
@@ -201,13 +208,54 @@ export function ProductsTab({ categories, brands }: ProductsTabProps) {
             />
             Maneja variantes (talla, color...)
           </label>
-          <div className="col-span-2 grid grid-cols-2 gap-4">
-            <DynamicAttributesFields
-              categoryAttributes={categoryAttributes}
-              values={attrValues}
-              onChange={(id, value) => setAttrValues((prev) => ({ ...prev, [id]: value }))}
-            />
-          </div>
+          {customFieldDefs.length > 0 && (
+            <div className="col-span-2 grid grid-cols-2 gap-4">
+              {customFieldDefs.map((f) => {
+                const value = customFieldValues[f.key];
+                const fieldLabel = `${f.label}${f.required ? " *" : ""}`;
+                if (f.type === "boolean") {
+                  return (
+                    <label key={f.id} className="flex items-center gap-2 text-sm text-on-surface">
+                      <input
+                        type="checkbox"
+                        checked={Boolean(value)}
+                        onChange={(e) =>
+                          setCustomFieldValues((prev) => ({ ...prev, [f.key]: e.target.checked }))
+                        }
+                        className="h-4 w-4 rounded border-outline"
+                      />
+                      {fieldLabel}
+                    </label>
+                  );
+                }
+                if (f.type === "select") {
+                  return (
+                    <Field key={f.id} label={fieldLabel}>
+                      <Select
+                        value={(value as string) ?? ""}
+                        onChange={(e) =>
+                          setCustomFieldValues((prev) => ({ ...prev, [f.key]: e.target.value }))
+                        }
+                        placeholder="Elegir…"
+                        options={(f.options ?? []).map((o) => ({ value: o, label: o }))}
+                      />
+                    </Field>
+                  );
+                }
+                return (
+                  <Field key={f.id} label={fieldLabel}>
+                    <Input
+                      type={f.type === "number" ? "number" : f.type === "date" ? "date" : "text"}
+                      value={(value as string) ?? ""}
+                      onChange={(e) =>
+                        setCustomFieldValues((prev) => ({ ...prev, [f.key]: e.target.value }))
+                      }
+                    />
+                  </Field>
+                );
+              })}
+            </div>
+          )}
         </div>
       </Modal>
 

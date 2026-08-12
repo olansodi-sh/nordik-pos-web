@@ -1,6 +1,7 @@
 import { Outlet } from "react-router-dom";
 import { LogOut } from "lucide-react";
 import { Sidebar } from "@/components/sidebar/sidebar.component";
+import { TenantSwitcher } from "@/components/tenant-switcher/tenant-switcher.component";
 import { useAuth } from "@/stores/auth.store";
 
 export function Layout() {
@@ -11,6 +12,7 @@ export function Layout() {
       <Sidebar />
       <div className="flex flex-1 flex-col overflow-hidden">
         <header className="flex items-center justify-end gap-4 border-b border-outline bg-surface-lowest px-8 py-3">
+          <TenantSwitcher />
           <div className="text-right leading-tight">
             <p className="text-sm font-medium text-on-surface">{user?.name}</p>
             <p className="text-xs text-secondary">{user?.email}</p>

@@ -13,8 +13,8 @@ const LoginPage = () => {
   async function onSubmit(e: FormEvent) {
     e.preventDefault();
     try {
-      await login(email, password);
-      navigate("/dashboard");
+      const completed = await login(email, password);
+      navigate(completed ? "/dashboard" : "/select-tenant");
     } catch {
       // el error ya queda expuesto por useAuth().error
     }

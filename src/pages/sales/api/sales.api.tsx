@@ -52,6 +52,7 @@ export interface CreateSalePayload {
   warehouseId: string;
   cashSessionId?: string;
   label?: string;
+  customFields?: Record<string, unknown>;
   lines: CreateSaleLinePayload[];
 }
 

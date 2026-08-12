@@ -1,5 +1,10 @@
 import { useCallback, useEffect, useState } from "react";
 import { BusinessApi, type Business } from "@/pages/business/api/business.api";
+import {
+  CustomFieldsApi,
+  type CustomFieldDefinition,
+  type CustomizableEntityType,
+} from "@/pages/business/api/custom-fields.api";
 
 export function useBusinesses() {
   const [businesses, setBusinesses] = useState<Business[]>([]);
@@ -41,4 +46,24 @@ export function useBusiness() {
   }, [refetch]);
 
   return { business, loading, refetch };
+}
+
+export function useCustomFields(entityType: CustomizableEntityType) {
+  const [fields, setFields] = useState<CustomFieldDefinition[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  const refetch = useCallback(async () => {
+    setLoading(true);
+    try {
+      setFields(await CustomFieldsApi.list(entityType));
+    } finally {
+      setLoading(false);
+    }
+  }, [entityType]);
+
+  useEffect(() => {
+    void refetch();
+  }, [refetch]);
+
+  return { fields, loading, refetch };
 }

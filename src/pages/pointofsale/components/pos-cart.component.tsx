@@ -16,6 +16,7 @@ import { useCustomers } from "@/pages/thirdparty/hooks/thirdparty.hook";
 import { usePriceListItems, usePriceLists } from "@/pages/pricelist/hooks/pricelist.hook";
 import { SalesApi, PaymentsApi, type PaymentMethod, type Sale } from "@/pages/sales/api/sales.api";
 import type { CashSession } from "@/pages/pointofsale/api/pointofsale.api";
+import { useCustomFields } from "@/pages/business/hooks/business.hook";
 
 interface CartLine {
   key: string;
@@ -43,12 +44,14 @@ export function PosCart({ session }: PosCartProps) {
   const { warehouses } = useWarehouses();
   const { customers } = useCustomers();
   const { priceLists } = usePriceLists();
+  const { fields: customFieldDefs } = useCustomFields("sale");
   const { notifyError, notifySuccess } = useToast();
 
   const [warehouseId, setWarehouseId] = useState(session.warehouseId ?? "");
   const [customerId, setCustomerId] = useState("");
   const [priceListId, setPriceListId] = useState("");
   const [label, setLabel] = useState("");
+  const [customFieldValues, setCustomFieldValues] = useState<Record<string, string | boolean>>({});
   const { items: priceItems } = usePriceListItems(priceListId || null);
 
   const [search, setSearch] = useState("");
@@ -122,6 +125,10 @@ export function PosCart({ session }: PosCartProps) {
     setLines((prev) => prev.filter((l) => l.key !== key));
   }
 
+  const missingRequiredCustomField = customFieldDefs.some(
+    (f) => f.required && !customFieldValues[f.key],
+  );
+
   async function onConfirmSale() {
     if (!warehouseId || lines.length === 0) return;
     setConfirming(true);
@@ -133,6 +140,7 @@ export function PosCart({ session }: PosCartProps) {
         warehouseId,
         cashSessionId: session.id,
         label: label || undefined,
+        customFields: Object.keys(customFieldValues).length > 0 ? customFieldValues : undefined,
         lines: lines.map((l) => ({ productId: l.productId, variantId: l.variantId, quantity: l.quantity })),
       });
       setCreatedSale(sale);
@@ -171,6 +179,7 @@ export function PosCart({ session }: PosCartProps) {
     setCustomerId("");
     setLabel("");
     setPayAmount("0");
+    setCustomFieldValues({});
   }
 
   function onLeaveAsOpenTab() {
@@ -267,6 +276,55 @@ export function PosCart({ session }: PosCartProps) {
             </Field>
           </div>
 
+          {customFieldDefs.length > 0 && (
+            <div className="mb-4 grid grid-cols-4 gap-4">
+              {customFieldDefs.map((f) => {
+                const value = customFieldValues[f.key];
+                const label = `${f.label}${f.required ? " *" : ""}`;
+                if (f.type === "boolean") {
+                  return (
+                    <label key={f.id} className="flex items-center gap-2 self-end pb-2.5 text-sm text-on-surface">
+                      <input
+                        type="checkbox"
+                        checked={Boolean(value)}
+                        onChange={(e) =>
+                          setCustomFieldValues((prev) => ({ ...prev, [f.key]: e.target.checked }))
+                        }
+                        className="h-4 w-4 rounded border-outline"
+                      />
+                      {label}
+                    </label>
+                  );
+                }
+                if (f.type === "select") {
+                  return (
+                    <Field key={f.id} label={label}>
+                      <Select
+                        value={(value as string) ?? ""}
+                        onChange={(e) =>
+                          setCustomFieldValues((prev) => ({ ...prev, [f.key]: e.target.value }))
+                        }
+                        placeholder="Elegir…"
+                        options={(f.options ?? []).map((o) => ({ value: o, label: o }))}
+                      />
+                    </Field>
+                  );
+                }
+                return (
+                  <Field key={f.id} label={label}>
+                    <Input
+                      type={f.type === "number" ? "number" : f.type === "date" ? "date" : "text"}
+                      value={(value as string) ?? ""}
+                      onChange={(e) =>
+                        setCustomFieldValues((prev) => ({ ...prev, [f.key]: e.target.value }))
+                      }
+                    />
+                  </Field>
+                );
+              })}
+            </div>
+          )}
+
           <div className="relative mb-4">
             <Field label="Buscar producto (nombre/SKU) o escanear código de barras">
               <div className="flex gap-2">
@@ -348,7 +406,7 @@ export function PosCart({ session }: PosCartProps) {
             className="w-full"
             onClick={() => void onConfirmSale()}
             loading={confirming}
-            disabled={!warehouseId || lines.length === 0}
+            disabled={!warehouseId || lines.length === 0 || missingRequiredCustomField}
           >
             Confirmar venta
           </Button>

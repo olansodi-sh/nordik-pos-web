@@ -4,12 +4,14 @@ import { PageHeader } from "@/components/page-header/page-header.component";
 import { Card } from "@/components/cards/card.component";
 import { UsersTab } from "@/pages/users/components/users-tab.component";
 import { RolesTab } from "@/pages/users/components/roles-tab.component";
+import { MenuAccessTab } from "@/pages/users/components/menu-access-tab.component";
 
-type TabKey = "users" | "roles";
+type TabKey = "users" | "roles" | "menu-access";
 
 const TABS: { key: TabKey; label: string }[] = [
   { key: "users", label: "Usuarios" },
   { key: "roles", label: "Roles y permisos" },
+  { key: "menu-access", label: "Accesos de menú" },
 ];
 
 const UsersPage = () => {
@@ -39,6 +41,7 @@ const UsersPage = () => {
       <Card>
         {tab === "users" && <UsersTab />}
         {tab === "roles" && <RolesTab />}
+        {tab === "menu-access" && <MenuAccessTab />}
       </Card>
     </div>
   );

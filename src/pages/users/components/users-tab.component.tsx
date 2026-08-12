@@ -31,6 +31,7 @@ export function UsersTab() {
   const effectiveBusinessId = isSuperAdmin ? targetBusinessId || undefined : undefined;
 
   const { users, loading, refetch } = useAppUsers(effectiveBusinessId);
+  const { roles: listRoles } = useRoles(effectiveBusinessId);
   const { notifyError, notifySuccess } = useToast();
 
   const [open, setOpen] = useState(false);
@@ -69,9 +70,10 @@ export function UsersTab() {
   }
 
   async function onToggleActive(u: AppUser) {
+    const isActive = u.membershipStatus === "active";
     try {
-      await UsersApi.update(u.id, { active: !u.active });
-      notifySuccess(u.active ? "Usuario desactivado" : "Usuario activado");
+      await UsersApi.update(u.id, { active: !isActive });
+      notifySuccess(isActive ? "Usuario desactivado" : "Usuario activado");
       await refetch();
     } catch (err) {
       notifyError(err instanceof ApiError ? err.message : "No se pudo actualizar el usuario");
@@ -91,8 +93,16 @@ export function UsersTab() {
   const columns: TableColumn<AppUser>[] = [
     { key: "name", header: "Nombre", render: (u) => u.name },
     { key: "email", header: "Correo", render: (u) => u.email },
-    { key: "role", header: "Rol", render: (u) => u.role?.name ?? "Sin rol" },
-    { key: "active", header: "Estado", render: (u) => (u.active ? "Activo" : "Inactivo") },
+    {
+      key: "role",
+      header: "Rol",
+      render: (u) => listRoles.find((r) => r.id === u.roleId)?.name ?? "Sin rol",
+    },
+    {
+      key: "active",
+      header: "Estado",
+      render: (u) => (u.membershipStatus === "active" ? "Activo" : "Inactivo"),
+    },
     {
       key: "actions",
       header: "",
@@ -104,7 +114,7 @@ export function UsersTab() {
             onClick={() => void onToggleActive(u)}
             className="rounded-md px-2 py-1 text-xs font-medium text-on-surface-variant transition-colors hover:bg-surface-container"
           >
-            {u.active ? "Desactivar" : "Activar"}
+            {u.membershipStatus === "active" ? "Desactivar" : "Activar"}
           </button>
           {u.id !== currentUser?.userId && (
             <button

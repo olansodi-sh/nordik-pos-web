@@ -5,16 +5,16 @@ import { Card } from "@/components/cards/card.component";
 import { ProductsTab } from "@/pages/products/components/products-tab.component";
 import { CategoriesTab } from "@/pages/products/components/categories-tab.component";
 import { BrandsTab } from "@/pages/products/components/brands-tab.component";
-import { AttributesTab } from "@/pages/products/components/attributes-tab.component";
+import { CustomFieldsTab } from "@/pages/business/components/custom-fields-tab.component";
 import { useBrands, useCategories } from "@/pages/products/hooks/products.hook";
 
-type TabKey = "products" | "categories" | "brands" | "attributes";
+type TabKey = "products" | "categories" | "brands" | "customFields";
 
 const TABS: { key: TabKey; label: string }[] = [
   { key: "products", label: "Productos" },
   { key: "categories", label: "Categorías" },
   { key: "brands", label: "Marcas" },
-  { key: "attributes", label: "Atributos" },
+  { key: "customFields", label: "Campos personalizados" },
 ];
 
 const ProductsPage = () => {
@@ -47,7 +47,13 @@ const ProductsPage = () => {
         {tab === "products" && <ProductsTab categories={categories} brands={brands} />}
         {tab === "categories" && <CategoriesTab />}
         {tab === "brands" && <BrandsTab />}
-        {tab === "attributes" && <AttributesTab categories={categories} />}
+        {tab === "customFields" && (
+          <CustomFieldsTab
+            entityType="product"
+            helpText='Agrega propiedades propias a tus productos (ej. "Color", "Voltaje", "Material"). Se piden al crear un producto y quedan guardadas con él.'
+            requiredHelpText="Obligatorio al crear el producto"
+          />
+        )}
       </Card>
     </div>
   );

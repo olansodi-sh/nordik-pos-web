@@ -27,7 +27,7 @@ export interface AppUser {
   email: string;
   active: boolean;
   roleId: string | null;
-  role: Role | null;
+  membershipStatus: "active" | "suspended";
 }
 
 export interface CreateUserPayload {

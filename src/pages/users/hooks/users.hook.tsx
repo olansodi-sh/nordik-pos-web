@@ -7,6 +7,7 @@ import {
   type Permission,
   type Role,
 } from "@/pages/users/api/users.api";
+import { MenuAccessApi, type MenuItem, type MenuAccessRule } from "@/pages/users/api/menu-access.api";
 
 function errorMessage(err: unknown): string {
   return err instanceof ApiError ? err.message : "Ocurrió un error inesperado";
@@ -58,6 +59,48 @@ export function useRoles(businessId?: string) {
   }, [refetch]);
 
   return { roles, loading, error, refetch };
+}
+
+export function useMenuItems() {
+  const [items, setItems] = useState<MenuItem[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    setLoading(true);
+    void MenuAccessApi.items()
+      .then(setItems)
+      .finally(() => setLoading(false));
+  }, []);
+
+  return { items, loading };
+}
+
+export function useMenuRulesForUser(userId?: string) {
+  const [rules, setRules] = useState<MenuAccessRule[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+
+  const refetch = useCallback(async () => {
+    if (!userId) {
+      setRules([]);
+      return;
+    }
+    setLoading(true);
+    setError("");
+    try {
+      setRules(await MenuAccessApi.rulesForUser(userId));
+    } catch (err) {
+      setError(errorMessage(err));
+    } finally {
+      setLoading(false);
+    }
+  }, [userId]);
+
+  useEffect(() => {
+    void refetch();
+  }, [refetch]);
+
+  return { rules, loading, error, refetch };
 }
 
 export function usePermissions() {

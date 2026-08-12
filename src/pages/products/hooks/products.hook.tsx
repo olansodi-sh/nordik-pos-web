@@ -1,16 +1,12 @@
 import { useCallback, useEffect, useState } from "react";
 import { ApiError } from "@/services/http/httpClient";
 import {
-  AttributeDefinitionsApi,
   BrandsApi,
   CategoriesApi,
-  CategoryAttributesApi,
   ProductsApi,
   ProductVariantsApi,
-  type AttributeDefinition,
   type Brand,
   type Category,
-  type CategoryAttribute,
   type Product,
   type ProductVariant,
 } from "@/pages/products/api/products.api";
@@ -65,54 +61,6 @@ export function useBrands() {
   }, [refetch]);
 
   return { brands, loading, error, refetch };
-}
-
-export function useAttributeDefinitions() {
-  const [attributes, setAttributes] = useState<AttributeDefinition[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
-
-  const refetch = useCallback(async () => {
-    setLoading(true);
-    setError("");
-    try {
-      setAttributes(await AttributeDefinitionsApi.list());
-    } catch (err) {
-      setError(errorMessage(err));
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    void refetch();
-  }, [refetch]);
-
-  return { attributes, loading, error, refetch };
-}
-
-export function useCategoryAttributes(categoryId: string | null) {
-  const [categoryAttributes, setCategoryAttributes] = useState<CategoryAttribute[]>([]);
-  const [loading, setLoading] = useState(false);
-
-  const refetch = useCallback(async () => {
-    if (!categoryId) {
-      setCategoryAttributes([]);
-      return;
-    }
-    setLoading(true);
-    try {
-      setCategoryAttributes(await CategoryAttributesApi.list(categoryId));
-    } finally {
-      setLoading(false);
-    }
-  }, [categoryId]);
-
-  useEffect(() => {
-    void refetch();
-  }, [refetch]);
-
-  return { categoryAttributes, loading, refetch };
 }
 
 export function useProducts() {
