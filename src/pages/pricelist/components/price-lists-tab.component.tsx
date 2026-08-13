@@ -147,11 +147,7 @@ export function PriceListsTab() {
               emptyMessage="Sin precios definidos en esta lista."
             />
 
-            <p className="mb-3 mt-4 text-xs text-secondary">
-              Por ahora solo productos sin variantes. El precio por variante se agrega próximamente
-              desde el detalle de variantes.
-            </p>
-            <div className="grid grid-cols-3 gap-4">
+            <div className="mt-4 grid grid-cols-3 gap-4">
               <Field label="Producto">
                 <Select
                   value={itemProductId}

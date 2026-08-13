@@ -16,8 +16,7 @@ export function InventoryValuationTab() {
   return (
     <div>
       <p className="mb-4 text-xs text-secondary">
-        Solo incluye stock de productos con variantes (tienen costo propio). Los productos sin variantes aún no
-        tienen un campo de costo en el sistema.
+        Los productos aún no tienen un campo de costo en el sistema, así que el valor se muestra en 0.
       </p>
       <Table columns={columns} rows={rows} rowKey={(r) => r.warehouseId} loading={loading} emptyMessage="Sin stock valorizable." />
     </div>
